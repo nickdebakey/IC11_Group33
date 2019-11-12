@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "749908037421",
+    "firebase_url": "https://ic11group33.firebaseio.com",
+    "project_id": "ic11group33",
+    "storage_bucket": "ic11group33.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:749908037421:android:7222096b6b84fa2344cda4",
+        "android_client_info": {
+          "package_name": "com.example.ic11_group33"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "749908037421-t63d0grta2qntloigb47mv21r3ujavd7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWSeQVHVlafOkv77WZtuCPZ1q7YTSKXWE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "749908037421-t63d0grta2qntloigb47mv21r3ujavd7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
