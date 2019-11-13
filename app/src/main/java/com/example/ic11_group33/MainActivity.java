@@ -34,22 +34,50 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
     ListView lv_photos;
     static final int REQUEST_IMAGE_CAPTURE = 1;
-    String TAG = "demo";
     ArrayList<Photos> photosArrayList = new ArrayList<Photos>();
+    int count = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setTitle("My Photo Album");
 
         btn_takePhoto = findViewById(R.id.btn_takePhoto);
         progressBar = findViewById(R.id.progressBar);
         lv_photos = findViewById(R.id.lv_photos);
 
+        // read if there are pictures in the database already:: doesn't work
+//        int i = 1;
+//        boolean loop = true;
+//        FirebaseStorage storage = FirebaseStorage.getInstance();
+//        StorageReference storageRef = storage.getReference();
+//        while (loop) {
+//            final StorageReference itemToAdd = storageRef.child("images/camera" + i + ".png");
+//            itemToAdd.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+//                @Override
+//                public void onSuccess(Uri uri) {
+//                    Task<Uri> task = itemToAdd.getDownloadUrl();
+//                    task.addOnSuccessListener(new OnSuccessListener<Uri>() {
+//                        @Override
+//                        public void onSuccess(Uri uri) {
+//                            Photos photo = new Photos(uri.toString());
+//                            photosArrayList.add(photo);
+//                        }
+//                    });
+//                }
+//            });
+//            i++;
+//            if (!itemToAdd.getDownloadUrl().isSuccessful()) {
+//                loop = false;
+//            }
+//        }
+
         btn_takePhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 dispatchTakePictureIntent();
+                count++;
             }
         });
     }
@@ -77,9 +105,9 @@ public class MainActivity extends AppCompatActivity {
     // upload camera photo to cloud storage
     private void uploadImage(Bitmap photoBitmap){
         FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
-        StorageReference storageReference = firebaseStorage.getReference();
+        final StorageReference storageReference = firebaseStorage.getReference();
 
-        final StorageReference imageRepo = storageReference.child("images/camera.png");
+        final StorageReference imageRepo = storageReference.child("images/camera" + count + ".png");
 
         // converting the bitmap into a byteArrayOutputStream....
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -106,15 +134,20 @@ public class MainActivity extends AppCompatActivity {
                     photosArrayList.add(photos);
 
                     // array adapter here with urls of images
-                    PhotosAdapter photosAdapter = new PhotosAdapter(MainActivity.this, R.layout.photos, photosArrayList);
+                    final PhotosAdapter photosAdapter = new PhotosAdapter(MainActivity.this, R.layout.photos, photosArrayList);
                     lv_photos.setAdapter(photosAdapter);
-//                    lv_photos.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-//                        @Override
-//                        public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-//                            // delete the photo
-//                            return false;
-//                        }
-//                    });
+                    lv_photos.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                        @Override
+                        public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int i, long l) {
+                            FirebaseStorage storage = FirebaseStorage.getInstance();
+                            StorageReference storageRef = storage.getReference();
+                            StorageReference itemToDelete = storageRef.child("images/camera" + (i+1) + ".png");
+                            itemToDelete.delete();
+                            photosArrayList.remove(i);
+                            photosAdapter.notifyDataSetChanged();
+                            return false;
+                        }
+                    });
                 }
             }
         });
