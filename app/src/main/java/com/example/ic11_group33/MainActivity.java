@@ -15,12 +15,14 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
+import com.google.android.gms.auth.api.signin.internal.Storage;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -35,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     ListView lv_photos;
     static final int REQUEST_IMAGE_CAPTURE = 1;
     ArrayList<Photos> photosArrayList = new ArrayList<Photos>();
-    int count = 0;
+    int count = photosArrayList.size();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,31 +49,30 @@ public class MainActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         lv_photos = findViewById(R.id.lv_photos);
 
-        // read if there are pictures in the database already:: doesn't work
-//        int i = 1;
-//        boolean loop = true;
-//        FirebaseStorage storage = FirebaseStorage.getInstance();
-//        StorageReference storageRef = storage.getReference();
-//        while (loop) {
-//            final StorageReference itemToAdd = storageRef.child("images/camera" + i + ".png");
-//            itemToAdd.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-//                @Override
-//                public void onSuccess(Uri uri) {
-//                    Task<Uri> task = itemToAdd.getDownloadUrl();
-//                    task.addOnSuccessListener(new OnSuccessListener<Uri>() {
-//                        @Override
-//                        public void onSuccess(Uri uri) {
-//                            Photos photo = new Photos(uri.toString());
-//                            photosArrayList.add(photo);
-//                        }
-//                    });
-//                }
-//            });
-//            i++;
-//            if (!itemToAdd.getDownloadUrl().isSuccessful()) {
-//                loop = false;
-//            }
-//        }
+        FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+        StorageReference listRef = firebaseStorage.getReference().child("images");
+        listRef.listAll().addOnSuccessListener(new OnSuccessListener<ListResult>() {
+            @Override
+            public void onSuccess(ListResult listResult) {
+                for (final StorageReference item : listResult.getItems()) {
+                    item.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            Task<Uri> task = item.getDownloadUrl();
+                            task.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    Photos photo = new Photos(uri.toString());
+                                    photosArrayList.add(photo);
+                                    final PhotosAdapter photosAdapter = new PhotosAdapter(MainActivity.this, R.layout.photos, photosArrayList);
+                                    lv_photos.setAdapter(photosAdapter);
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
 
         btn_takePhoto.setOnClickListener(new View.OnClickListener() {
             @Override
